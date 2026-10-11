@@ -1,0 +1,30 @@
+# Maxfiy sozlamalar: bot tokeni, Neon bazasi paroli
+.env
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Mijozlar ma'lumotlari (buyurtmalar, savatlar, tillar, tashriflar) — ular Neon bazasida
+backend/data/orders.json
+backend/data/carts.json
+backend/data/langs.json
+backend/data/visits.json
+backend/data/file_ids.json
+backend/data/*.tmp
+
+# Kanaldan yuklangan rasmlar — /update bilan qayta yuklanadi
+backend/data/photos/
+
+# Jurnal
+logs/
+
+# Tizim fayllari
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
