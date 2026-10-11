@@ -47,9 +47,11 @@ WEB_PORT = int(ENV.get("PORT") or ENV.get("WEB_PORT") or "8080")  # PORT зад�
 TUNNEL = ENV.get("TUNNEL", "off" if ON_RENDER else "auto").lower()  # auto — временный адрес через cloudflared
 CLOUDFLARED = (ENV.get("CLOUDFLARED_PATH") or shutil.which("cloudflared")
                or r"C:\Program Files (x86)\cloudflared\cloudflared.exe")
-# Адрес магазина: постоянный (.env или адрес Render) или временный от туннеля
+# Адрес самого сервера бота (Render) — сюда Telegram присылает сообщения (webhook)
+SERVER_URL = (ENV.get("RENDER_EXTERNAL_URL") or ENV.get("WEBAPP_URL") or "").rstrip("/")
+# Адрес магазина для кнопок: WEBAPP_URL (например, Vercel), иначе сам сервер, иначе временный туннель
 # (меняется во время работы — читать как settings.webapp_url)
-webapp_url = (ENV.get("WEBAPP_URL") or ENV.get("RENDER_EXTERNAL_URL") or "").rstrip("/")
+webapp_url = (ENV.get("WEBAPP_URL") or SERVER_URL).rstrip("/")
 
 # Как бот получает сообщения: polling — сам спрашивает Telegram (компьютер),
 # webhook — Telegram присылает их на адрес сервера (Render: сервер может «засыпать» и просыпаться от сообщения)

@@ -10,11 +10,12 @@ from aiohttp import web
 
 from src.config.settings import WEB_HOST, WEB_PORT, WEBHOOK_PATH, WEBHOOK_SECRET
 from src.middlewares.cache_middleware import no_cache_middleware
+from src.middlewares.cors_middleware import cors_middleware
 from src.routes.web_routes import setup_web_routes
 
 
 def create_web_app(bot: Bot, dp: Dispatcher | None = None) -> web.Application:
-    app = web.Application(client_max_size=64 * 1024, middlewares=[no_cache_middleware])
+    app = web.Application(client_max_size=64 * 1024, middlewares=[cors_middleware, no_cache_middleware])
     app["bot"] = bot
     setup_web_routes(app)
     if dp:  # webhook: принимаем только запросы с секретом, который знает Telegram

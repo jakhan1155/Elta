@@ -55,7 +55,7 @@ async def main():
     bot = create_bot()
     await init_database()
     dp = create_dispatcher()
-    webhook = settings.BOT_MODE == "webhook" and bool(settings.webapp_url)
+    webhook = settings.BOT_MODE == "webhook" and bool(settings.SERVER_URL)
     runner = await start_web_server(bot, dp if webhook else None)  # порт открываем сразу — сервер ждёт его
     await set_commands(bot)
 
@@ -75,7 +75,7 @@ async def main():
     logging.info("Бот запущен (%s), товаров в каталоге: %s", "webhook" if webhook else "polling", len(catalog.products))
     try:
         if webhook:
-            await bot.set_webhook(settings.webapp_url + settings.WEBHOOK_PATH, secret_token=settings.WEBHOOK_SECRET,
+            await bot.set_webhook(settings.SERVER_URL + settings.WEBHOOK_PATH, secret_token=settings.WEBHOOK_SECRET,
                                   allowed_updates=dp.resolve_used_update_types())
             await asyncio.Event().wait()  # работаем, пока сервер не остановят
         else:
