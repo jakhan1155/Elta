@@ -9,6 +9,7 @@ from src.controllers import webapp_controller as wc
 
 def setup_web_routes(app: web.Application) -> None:
     app.router.add_get("/", wc.web_index)
+    app.router.add_get("/health", wc.web_health)  # проверка сервером, что бот жив
     app.router.add_get("/api/catalog", wc.web_catalog)
     app.router.add_post("/api/order", wc.web_order)
     app.router.add_post("/api/lang", wc.web_lang)

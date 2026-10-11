@@ -37,18 +37,33 @@ async def init_database() -> None:
         logging.exception("Neon недоступна — работаю на локальных файлах")
 
 
+def photos_missing() -> bool:
+    """На новом сервере фото товаров ещё не скачаны (в GitHub их нет) — их надо загрузить из канала."""
+    return any(p["photos"] and not (settings.DATA_DIR / p["photos"][0]).exists() for p in catalog.products.values())
+
+
+async def background_update():
+    try:
+        n = await run_update()
+        logging.info("Каталог и фото загружены из канала: %s товаров", n)
+    except Exception:
+        logging.exception("Не удалось загрузить каталог из канала")
+
+
 async def main():
     setup_logging()
     bot = create_bot()
-    if not catalog.products:
-        logging.info("catalog.json пуст — загружаю товары из канала…")
-        await run_update()
     await init_database()
     dp = create_dispatcher()
+    webhook = settings.BOT_MODE == "webhook" and bool(settings.webapp_url)
+    runner = await start_web_server(bot, dp if webhook else None)  # порт открываем сразу — сервер ждёт его
     await set_commands(bot)
-    runner = await start_web_server(bot)
 
-    if settings.webapp_url:  # постоянный адрес (сервер с доменом)
+    if not catalog.products or photos_missing():
+        logging.info("Нет товаров или фото — загружаю из канала в фоне…")
+        asyncio.create_task(background_update())
+
+    if settings.webapp_url:  # постоянный адрес (сервер)
         await set_shop_button(bot, settings.webapp_url)
     else:
         # пока туннель поднимается, не показываем кнопку со старым (уже нерабочим) адресом
@@ -57,12 +72,19 @@ async def main():
             asyncio.create_task(tunnel_supervisor(bot))
 
     asyncio.create_task(auto_update_loop())
-    logging.info("Бот запущен, товаров в каталоге: %s", len(catalog.products))
+    logging.info("Бот запущен (%s), товаров в каталоге: %s", "webhook" if webhook else "polling", len(catalog.products))
     try:
-        await dp.start_polling(bot)
+        if webhook:
+            await bot.set_webhook(settings.webapp_url + settings.WEBHOOK_PATH, secret_token=settings.WEBHOOK_SECRET,
+                                  allowed_updates=dp.resolve_used_update_types())
+            await asyncio.Event().wait()  # работаем, пока сервер не остановят
+        else:
+            await bot.delete_webhook()  # если раньше бот работал на сервере — забираем сообщения себе
+            await dp.start_polling(bot)
     finally:
         await runner.cleanup()
         stop_tunnel()
+        await bot.session.close()
 
 
 if __name__ == "__main__":

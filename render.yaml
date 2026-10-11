@@ -1,0 +1,31 @@
+# Render (render.com): бот + мини-приложение одним веб-сервисом.
+# Render → New → Blueprint → репозиторий jakhan1155/Elta. Секреты (sync: false) вводятся в Render вручную.
+services:
+  - type: web
+    name: elta-bot
+    runtime: python
+    region: frankfurt
+    plan: free            # free засыпает через 15 мин без посетителей; starter ($7/мес) — работает всегда
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python backend/src/main.py
+    healthCheckPath: /health
+    autoDeploy: true      # новый commit в GitHub — сервер обновляется сам
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: BOT_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: ORDER_CHAT_ID
+        sync: false
+      - key: ADMIN_USERNAME
+        value: Jakhan_11
+      - key: CHANNEL_URL
+        value: https://t.me/elta_uz
+      - key: PHONES
+        value: +998(33)003-22-77,+998(93)516-05-38
+      - key: AUTO_UPDATE_HOURS
+        value: "6"

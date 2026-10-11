@@ -42,6 +42,10 @@ async def web_index(request: web.Request) -> web.FileResponse:
     return web.FileResponse(FRONTEND_DIR / "public" / "index.html")
 
 
+async def web_health(request: web.Request) -> web.Response:
+    return web.Response(text="ok")
+
+
 async def web_catalog(request: web.Request) -> web.Response:
     products = [{**p, "thumb": thumb_for(p)} for p in sorted(catalog.products.values(), key=lambda p: -p["id"])]
     return json_response({"products": products, "categories": catalog.categories, "phones": PHONES,
